@@ -26,7 +26,7 @@ public class Main {
             }
             else {
                 // interactive mode
-                System.out.println("Lambda Simulator v1.0 (Java) - Type 'exit;' to quit, 'help;' for help.");
+                System.out.println("Lambda Simulator - Type 'exit;' to quit, 'help;' for help.");
                 LEvalVisitorImpl visitor = new LEvalVisitorImpl();
                 Scanner sc = new Scanner(System.in);
                 String buffer = "";
@@ -34,7 +34,7 @@ public class Main {
 
                 while(true) {
                     if(newInput) {
-                        System.out.print("> ");
+                        System.out.print("\n> ");
                     }
                     else {
                         System.out.print("... ");

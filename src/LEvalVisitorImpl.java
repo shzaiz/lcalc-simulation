@@ -355,9 +355,10 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         return s;
     }
 
-    // A simplified term -> string representation (like your format_term)
-    // to detect Church numerals, lists, etc. is optional
+    // A simplified term -> string representation
+    // to detect Church numerals, lists.
     private String formatTerm(Term t) {
-        return t.toString();
+        Optional<String> str = CheckRewrite.checkRewrite(t);
+        return str.orElseGet(t::toString);
     }
 }

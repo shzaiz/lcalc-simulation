@@ -1,7 +1,8 @@
+import java.util.Objects;
 import java.util.Optional;
 
 public class CheckRewrite {
-    public Optional<String> checkRewrite(Term t){
+    public static Optional<String> checkRewrite(Term t){
 
         if(get_number(t).isPresent()){
             return get_number(t);
@@ -10,7 +11,7 @@ public class CheckRewrite {
         return Optional.empty();
     }
 
-    private Optional<String> get_number(Term t){
+    private static Optional<String> get_number(Term t){
         // lambda f.
         if(t.type != Term.TermType.ABSTRACT) return Optional.empty();
         Abstract ab1 = (Abstract) t;
@@ -21,11 +22,11 @@ public class CheckRewrite {
         int n = 0;
         Term loopterm = ab2.body;
         while(loopterm instanceof Apply a){
-            if(a.left != ab1.var) return Optional.empty();
+            if(!Objects.equals(a.left.toString(), ab1.var.toString())) return Optional.empty();
             n+=1;
             loopterm = a.right;
         }
-        if(loopterm == ab2.var) return (String.valueOf(n)).describeConstable();
+        if(Objects.equals(loopterm.toString(), ab2.var.toString())) return (String.valueOf(n)).describeConstable();
 
         return Optional.empty();
     }
