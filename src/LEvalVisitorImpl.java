@@ -1,5 +1,12 @@
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
@@ -29,7 +36,7 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
 
     // Each instruction is handled
     @Override
-    public Term visitInstruction(LEvalParser.InstructionContext ctx) {
+    public Term visitInstruction(LEvalParser.InstructionContext ctx){
         // We check which alternative matched
         if(ctx.HELP() != null) {
             // help;
@@ -69,7 +76,11 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         }
         else if(ctx.IMPORT() != null) {
             String path = stripQuotes(ctx.STRING().getText());
-            doImport(path);
+            try {
+                doImport(path);
+            } catch (IOException e) {
+                System.err.println("Error while reading file!");
+            }
         }
         else if(ctx.DEFAULTCOMBINATOR() != null) {
             Term t = visitTerm(ctx.term());
@@ -232,7 +243,6 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         Variable x = new Variable("x");
         Term body = x;
         // The order is reversed because you do x tN ... t2 t1 if you do normal left app
-        // But from your python code, you do something like a chain of Apply(Apply(... x, t1), t2) ...
         for(int i=0; i<list.size(); i++){
             body = new Apply(body, list.get(i));
         }
@@ -338,11 +348,19 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         }
     }
 
-    private void doImport(String path) {
-        // If you wish to parse a file the same way, you can load it via
-        // ANTLRFileStream or CharStreams, parse, etc.
-        // Similar to your Python code's "import"
-        System.out.println("Importing file: " + path + " [not fully implemented]");
+    private void doImport(String path) throws IOException {
+        System.out.println("Importing file: " + path + "...");
+        CharStream input = CharStreams.fromStream(Files.newInputStream(Paths.get(path)));
+        LEvalLexer lexer = new LEvalLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        LEvalParser parser = new LEvalParser(tokens);
+
+        try {
+            ParseTree tree = parser.program();
+            Main.visitor.visit(tree);
+        } catch(RuntimeException ex) {
+            System.err.println("Error: " + ex.getMessage());
+        }
     }
 
 

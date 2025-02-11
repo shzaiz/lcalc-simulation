@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class Main {
-
+    public static LEvalVisitorImpl visitor = new LEvalVisitorImpl();
     public static void main(String[] args) {
         try {
             if(args.length > 0) {
@@ -27,7 +27,7 @@ public class Main {
             else {
                 // interactive mode
                 System.out.println("Lambda Simulator - Type 'exit;' to quit, 'help;' for help.");
-                LEvalVisitorImpl visitor = new LEvalVisitorImpl();
+
                 Scanner sc = new Scanner(System.in);
                 String buffer = "";
                 boolean newInput = true;
