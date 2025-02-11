@@ -13,6 +13,12 @@ public abstract class Term {
         VARIABLE
     }
 
+    public enum PosDecideType{
+        NOT_DECIDED,
+        DECIDING,
+        DECIDED
+    }
+
     protected TermType type;
 
     public Term(TermType t) {
@@ -40,6 +46,7 @@ public abstract class Term {
     // For visually represent the lambda term
     Pair<Integer, Integer> startLocation = new Pair<>(0, 0);
     int length = 0;
+    PosDecideType hasDecidedPos = PosDecideType.NOT_DECIDED;
 
     // Helpers for overall reduce
     public Term betaReduce(boolean verbose) {

@@ -67,4 +67,9 @@ public class Main {
             e.printStackTrace();
         }
     }
+//    public static void main(String[] args) {
+//        Term t = new Apply(new Abstract(new Variable("var"), new Variable("xx")), new Variable("z"));
+//
+//        System.out.println("DONE");
+//    }
 }

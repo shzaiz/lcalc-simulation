@@ -6,6 +6,7 @@ import java.util.*;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -68,7 +69,9 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         else if(ctx.PRINT() != null) {
             Term t = visitTerm(ctx.term());
             Term result = evalTerm(t);
-            System.out.println(formatTerm(result));
+//            System.out.println(formatTerm(result));
+            LEvalVisitorImpl.decidePosition(t, true);
+            LEvalVisitorImpl.drawCrocdileGraph(t, 10, 50);
         }
         else if(ctx.PRINTNOEVAL() != null) {
             Term t = visitTerm(ctx.term());
@@ -377,5 +380,111 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
     private String formatTerm(Term t) {
         Optional<String> str = CheckRewrite.checkRewrite(t);
         return str.orElseGet(t::toString);
+    }
+
+    private static void startDecide(Term father, Term son, int len){
+        // On printing, we are making many copies of f
+        // so the positions won't conflict
+        if(son instanceof Variable var){
+            if(father instanceof Apply fat){
+                if(son == fat.left) {fat.left = new Variable(var.name); son = fat.left;}
+                else if(son == fat.right){ fat.right =  new Variable(var.name); son = fat.right;}
+            }else if(father instanceof Abstract abs){
+                abs.body =  new Variable(var.name);
+                son = abs.body;
+            }
+        }
+        son.startLocation = new Pair<>(father.startLocation.a+1, father.startLocation.b+len+1);
+        son.hasDecidedPos = Term.PosDecideType.DECIDING;
+
+    }
+
+    private static void stopDecide(Term term, int len){
+        term.length = len;
+        term.hasDecidedPos = Term.PosDecideType.DECIDED;
+    }
+    private Term lastDecide = null;
+    public static void decidePosition(Term t, boolean isFirst){
+        // if isfirst is off, then t must be deciding or has decided.
+        // otherwise error.
+        assert isFirst || t.hasDecidedPos != Term.PosDecideType.NOT_DECIDED;
+
+        int len = 0;
+
+        if(t instanceof Abstract abs){
+            // <varname>-----------<
+            len += 1;
+            len += abs.var.toString().length();
+            startDecide(abs, abs.body, 0);
+            decidePosition(abs.body, false);
+            len += abs.body.length;
+            stopDecide(abs, len+1);
+        }else if(t instanceof Apply app){
+            // -<term1>---<term2>-
+            startDecide(t, app.left, len);
+            decidePosition(app.left, false);
+            len += app.left.length+1;
+            startDecide(t, app.right, len);
+            decidePosition(app.right, false);
+            len += app.right.length;
+            stopDecide(t, len+1);
+        }else if(t instanceof Variable var){
+            len = var.name.length();
+            stopDecide(t, len);
+        }else{
+            assert false;
+        }
+    }
+
+    private static void drawElements(char[][] canvas, Term t){
+        // must be decided their pos before drawing
+        assert t.hasDecidedPos == Term.PosDecideType.DECIDED;
+        int x = t.startLocation.a; int y=t.startLocation.b;
+        if(t instanceof Abstract abs){
+            // <varname>---------< (opening mouth shark)
+            int boundary = y + abs.length;
+            int namelen = abs.var.name.length();
+            for(int i=0; i<namelen; i++){
+                canvas[x][y] = abs.var.name.charAt(i);
+                y++;
+            }
+            for(; y<boundary-1; y++){
+                canvas[x][y] = '-';
+            }
+            canvas[x][boundary-1] = '<';
+            drawElements(canvas, abs.body);
+        }else if(t instanceof Apply app){
+            // -------------- (A closed mouth shark)
+            for(int i=0; i<t.length; i++){
+                canvas[x][y+i] = '-';
+            }
+            drawElements(canvas, app.left);
+            drawElements(canvas, app.right);
+        }else if(t instanceof Variable var){
+            int nameLen = var.length;
+            for(int i=0; i<nameLen; i++){
+                // Avoid collision with apply term -
+                canvas[x][y+i] = var.name.charAt(i);
+            }
+        }
+    }
+
+    public static void drawCrocdileGraph(Term t, int h, int w){
+        char[][] canvas = new char[h][w];
+
+        for(int i=0; i<h; i++){
+            for(int j=0; j<w; j++){
+                canvas[i][j] = ' ';
+            }
+        }
+
+        drawElements(canvas, t);
+        System.out.println('\n');
+        for(int i=0; i<h; i++){
+            for(int j=0; j<w; j++){
+                System.out.print(canvas[i][j]);
+            }
+            System.out.println();
+        }
     }
 }
