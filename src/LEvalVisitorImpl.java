@@ -15,7 +15,7 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
     // Free variables map: varName -> (Term, isRecursive?)
     private Map<String,Term> freeVars = new HashMap<>();
 
-    // The default fixed-point combinator
+    // The default fixed-point combinator, not yet implemented
     private Term combinator = createTuringCombinator();
 
     // Some flags:
@@ -69,9 +69,10 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         else if(ctx.PRINT() != null) {
             Term t = visitTerm(ctx.term());
             Term result = evalTerm(t);
+            result = result.copy();
 //            System.out.println(formatTerm(result));
-            LEvalVisitorImpl.decidePosition(t, true);
-            LEvalVisitorImpl.drawCrocdileGraph(t, 10, 50);
+            LEvalVisitorImpl.decidePosition(result, true);
+            LEvalVisitorImpl.drawCrocdileGraph(result, 10, 50);
         }
         else if(ctx.PRINTNOEVAL() != null) {
             Term t = visitTerm(ctx.term());
