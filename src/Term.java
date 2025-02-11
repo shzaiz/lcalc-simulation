@@ -1,6 +1,9 @@
 
+import org.antlr.v4.runtime.misc.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class Term {
 
@@ -33,6 +36,10 @@ public abstract class Term {
     // One-step eta reduction
     // Return (newTerm, wasEtaReduced)
     public abstract ReductionResult oneStepEtaReduce();
+
+    // For visually represent the lambda term
+    Pair<Integer, Integer> startLocation = new Pair<>(0, 0);
+    int length = 0;
 
     // Helpers for overall reduce
     public Term betaReduce(boolean verbose) {
@@ -200,8 +207,8 @@ class Abstract extends Term {
 
     @Override
     public String toString() {
-        // Print λx. body
-        return "λ" + var.name + "." + body.toString();
+        Optional<String> result = CheckRewrite.checkRewrite(this);
+        return result.orElseGet(() -> "λ" + var.name + "." + body.toString());
     }
 
     @Override

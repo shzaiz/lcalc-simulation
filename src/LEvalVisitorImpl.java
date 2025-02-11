@@ -364,7 +364,6 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
     }
 
 
-
     // Utility: remove surrounding quotes from the parse text
     private String stripQuotes(String s) {
         if(s.startsWith("\"") && s.endsWith("\"") && s.length()>=2) {
