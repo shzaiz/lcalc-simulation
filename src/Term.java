@@ -62,7 +62,7 @@ public abstract class Term {
             current = rr.term;
             steps++;
             if(verbose) {
-                System.out.println(steps + " -b> " + current);
+                System.out.println(steps + " -b> " + current.toString());
             }
         }
         return current;
@@ -213,7 +213,8 @@ class Abstract extends Term {
     @Override
     public String toString() {
         Optional<String> result = CheckRewrite.checkRewrite(this);
-        return result.orElseGet(() -> "λ" + var.name + "." + body.toString());
+        if(result.isPresent()) return result.get();
+        else return  "(λ" + var.name + "." + body.toString() + ")";
     }
 
     @Override
@@ -290,7 +291,6 @@ class Apply extends Term {
 
     @Override
     public String toString() {
-        // You can tune how parentheses appear
         return "(" + left.toString() + " " + right.toString() + ")";
     }
 

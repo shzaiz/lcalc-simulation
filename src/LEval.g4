@@ -38,7 +38,7 @@ BETA      : 'beta' ;
 ETA       : 'eta' ;
 BOTH      : 'both' ;
 PRINT     : 'print' ;
-PRINTNOEVAL : 'printnoeval' ;
+PRINTNOEVAL : 'pne' ;
 IMPORT    : 'import' ;
 DEFAULTCOMBINATOR : 'defaultcombinator' ;
 FIGOPTION  : 'figure' ;

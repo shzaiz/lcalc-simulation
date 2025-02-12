@@ -28,7 +28,7 @@ null
 'eta'
 'both'
 'print'
-'printnoeval'
+'pne'
 'import'
 'defaultcombinator'
 'figure'

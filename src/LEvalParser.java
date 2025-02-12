@@ -41,7 +41,7 @@ public class LEvalParser extends Parser {
 			null, "'='", null, null, null, "';'", "'('", "')'", "'['", "']'", "'<'", 
 			"'>'", "','", "'.'", "'::'", "':='", "'<-'", null, "'help'", "'clear'", 
 			"'exit'", "'listall'", "'showlastinfos'", "'verbose'", "'reduce'", "'beta'", 
-			"'eta'", "'both'", "'print'", "'printnoeval'", "'import'", "'defaultcombinator'", 
+			"'eta'", "'both'", "'print'", "'pne'", "'import'", "'defaultcombinator'", 
 			"'figure'", "'on'", "'off'", "'eval'", "'steps'", "'highlight'", "'horizontal'"
 		};
 	}
