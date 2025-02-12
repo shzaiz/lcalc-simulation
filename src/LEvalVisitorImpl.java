@@ -104,6 +104,7 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
             System.out.println("Please do the conversion of lambda calculus by hand.");
             Term t = visitTerm(ctx.term());
             this.combinator = t;
+            System.out.println("Your combinator now is "+this.combinator.toString());
         }
         else if(ctx.NAME() != null && (ctx.ASSIGN() != null || ctx.ASSIGN_NO_EVAL() != null)) {
             // Assignment
