@@ -8,4 +8,4 @@ add := \n m f x. n f (m f x);
 mult := \n m f. n (m f);
 sub := \n m. m pred n;
 iszero := \n x y.n(\z.y)x;
-factp := \n. (n (\c. <mult (c (\x y. x)) (c (\x y. y)), succ (c (\x y. y))> ) <1,1> ) (\x y. x); # faster
+factp := \n. (n (\c. <mult (c (\x y. x)) (c (\x y. y)), succ (c (\x y. y))> ) <1,1> ) (\x y. x);
