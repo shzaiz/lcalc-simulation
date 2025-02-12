@@ -58,16 +58,14 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
             doListAll();
         }
         else if(ctx.FIGOPTION() != null){
-            boolean b = ctx.booleanOption().TRUE_() != null;
-            this.graphics = b;
+            this.graphics = ctx.booleanOption().TRUE_() != null;
         }
         else if(ctx.SHOWLASTINFOS() != null) {
             // showlastinfo;
             doShowLastInfos();
         }
         else if(ctx.VERBOSE() != null) {
-            boolean b = ctx.booleanOption().TRUE_() != null;
-            this.verbose = b;
+            this.verbose = ctx.booleanOption().TRUE_() != null;
         }
         else if(ctx.REDUCE() != null) {
             setReduceOptions(ctx.reduceOption());
@@ -343,9 +341,12 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         System.out.println("NAME <- TERM; -> assign term without evaluating");
         System.out.println("listall; -> list defined variables");
         System.out.println("exit; -> quit interpreter");
+        System.out.println("import \"<filepath>\"; -> import file to current environment");
         System.out.println("----------- DISPLAYING -----------");
         System.out.println("verbose on/off; -> show/hide derivation progress");
         System.out.println("figure on/off; -> show/hide agile ASCII art");
+        System.out.println("----------- STATISTICS -----------");
+        System.out.println("showlastinfos; -> show last evaluation information");
     }
 
     private void doClear() {

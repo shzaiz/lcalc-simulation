@@ -44,10 +44,6 @@ DEFAULTCOMBINATOR : 'defaultcombinator' ;
 FIGOPTION  : 'figure' ;
 TRUE_     : 'on' ;
 FALSE_    : 'off' ;
-EVAL      : 'eval' ;
-STEPS     : 'steps' ;
-HIGHLIGHT : 'highlight' ;
-HORIZONTAL : 'horizontal' ;
 
 // A numeric literal
 NUMBER
@@ -111,14 +107,6 @@ reduceOption
  | BOTH
  ;
 
-// latexExportOptions -> (eval | steps | steps=n | highlight | horizontal)*
-latexExportOptions
- : ( EVAL
-   | STEPS ( '=' NUMBER )?
-   | HIGHLIGHT
-   | HORIZONTAL
-   )+
- ;
 
 // A term
 // T -> R {R*} is effectively left-recursive. We'll do it in a normal ANTLR approach.
