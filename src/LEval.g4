@@ -41,7 +41,7 @@ PRINT     : 'print' ;
 PRINTNOEVAL : 'printnoeval' ;
 IMPORT    : 'import' ;
 DEFAULTCOMBINATOR : 'defaultcombinator' ;
-LATEXEXPORT  : 'latexexport' ;
+FIGOPTION  : 'figure' ;
 TRUE_     : 'on' ;
 FALSE_    : 'off' ;
 EVAL      : 'eval' ;
@@ -93,7 +93,7 @@ instruction
  | PRINTNOEVAL term
  | IMPORT STRING
  | DEFAULTCOMBINATOR term
- | LATEXEXPORT term STRING latexExportOptions?
+ | FIGOPTION booleanOption
  // 2. Assignment
  | NAME (ASSIGN | ASSIGN_NO_EVAL) term
  ;

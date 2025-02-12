@@ -20,6 +20,8 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
 
     // Some flags:
     private boolean verbose = false;
+    private boolean graphics = false;
+
     private boolean reduceBeta = true;
     private boolean reduceEta  = false;
 
@@ -55,6 +57,10 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
             // listall;
             doListAll();
         }
+        else if(ctx.FIGOPTION() != null){
+            boolean b = ctx.booleanOption().TRUE_() != null;
+            this.graphics = b;
+        }
         else if(ctx.SHOWLASTINFOS() != null) {
             // showlastinfo;
             doShowLastInfos();
@@ -69,14 +75,21 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         else if(ctx.PRINT() != null) {
             Term t = visitTerm(ctx.term());
             Term result = evalTerm(t);
-            result = result.copy();
-//            System.out.println(formatTerm(result));
-            LEvalVisitorImpl.decidePosition(result, true);
-            LEvalVisitorImpl.drawCrocdileGraph(result, 10, 50);
+            if(graphics){
+                visualizeTerm(result);
+            }else{
+                System.out.println(formatTerm(result));
+            }
+
+
         }
         else if(ctx.PRINTNOEVAL() != null) {
             Term t = visitTerm(ctx.term());
-            System.out.println(formatTerm(t));
+            if(graphics){
+                visualizeTerm(t);
+            }else{
+                System.out.println(formatTerm(t));
+            }
         }
         else if(ctx.IMPORT() != null) {
             String path = stripQuotes(ctx.STRING().getText());
@@ -150,9 +163,6 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
     public Term visitRExpr(LEvalParser.RExprContext ctx) {
         /*
          R -> E | E :: R
-         If there's a ":: R", we convert to a "list pile" structure:
-         Or in your Python code, you handle it as "list_pile(e, r)"?
-         Actually the Python code has "E :: R" => a special list-liker.
         */
         Term left = visitEExpr(ctx.eExpr());
         if(ctx.rExpr() != null) {
@@ -281,7 +291,6 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
     private Term createTuringCombinator() {
         /*
            Y = (λa. λb. b (a a b)) (λa. λb. b (a a b))
-           We'll do something like that in Java
         */
         Variable a = new Variable("a");
         Variable b = new Variable("b");
@@ -311,8 +320,6 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
     }
 
     private void doClear() {
-        // Clear screen hack
-        // This is system-dependent; you can adapt or remove.
         try {
             if(System.getProperty("os.name").toLowerCase().contains("windows")){
                 new ProcessBuilder("cmd","/c","cls").inheritIO().start().waitFor();
@@ -404,37 +411,45 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         term.length = len;
         term.hasDecidedPos = Term.PosDecideType.DECIDED;
     }
-    private Term lastDecide = null;
-    public static void decidePosition(Term t, boolean isFirst){
+    /**
+     *
+     * **/
+    public static Pair<Integer, Integer> decidePosition(Term t, boolean isFirst){
         // if isfirst is off, then t must be deciding or has decided.
         // otherwise error.
         assert isFirst || t.hasDecidedPos != Term.PosDecideType.NOT_DECIDED;
 
         int len = 0;
+        Pair<Integer, Integer> maxHW = new Pair<>(0, 0);
 
         if(t instanceof Abstract abs){
             // <varname>-----------<
             len += 1;
             len += abs.var.toString().length();
             startDecide(abs, abs.body, 0);
-            decidePosition(abs.body, false);
+            maxHW = Utils.max(maxHW, decidePosition(abs.body, false));
             len += abs.body.length;
             stopDecide(abs, len+1);
+
+
         }else if(t instanceof Apply app){
             // -<term1>---<term2>-
             startDecide(t, app.left, len);
-            decidePosition(app.left, false);
+            maxHW = Utils.max(maxHW, decidePosition(app.left, false));
             len += app.left.length+1;
             startDecide(t, app.right, len);
-            decidePosition(app.right, false);
+            maxHW = Utils.max(maxHW, decidePosition(app.right, false));
             len += app.right.length;
             stopDecide(t, len+1);
         }else if(t instanceof Variable var){
             len = var.name.length();
             stopDecide(t, len);
+            return new Pair<>(t.startLocation.a, t.startLocation.b+t.length+1);
         }else{
             assert false;
         }
+        maxHW = Utils.max(maxHW, new Pair<>(0, t.length+5));
+        return maxHW;
     }
 
     private static void drawElements(char[][] canvas, Term t){
@@ -470,7 +485,7 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         }
     }
 
-    public static void drawCrocdileGraph(Term t, int h, int w){
+    public static void drawCrocodileGraph(Term t, int h, int w){
         char[][] canvas = new char[h][w];
 
         for(int i=0; i<h; i++){
@@ -480,12 +495,17 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         }
 
         drawElements(canvas, t);
-        System.out.println('\n');
         for(int i=0; i<h; i++){
             for(int j=0; j<w; j++){
                 System.out.print(canvas[i][j]);
             }
             System.out.println();
         }
+    }
+
+    public static void visualizeTerm(Term t){
+        Term tCopied = t.copy();
+        Pair<Integer, Integer> hw = LEvalVisitorImpl.decidePosition(tCopied, true);
+        LEvalVisitorImpl.drawCrocodileGraph(tCopied, hw.a+1, hw.b);
     }
 }
