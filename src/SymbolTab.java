@@ -10,6 +10,7 @@ public class SymbolTab {
 
     // Get if the value has been stored. Returns NULL
     // when undefined.
+
     Variable find(String name){
         SymbolTab cpy = this;
         while(cpy != null){

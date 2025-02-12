@@ -100,6 +100,8 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
             }
         }
         else if(ctx.DEFAULTCOMBINATOR() != null) {
+            System.out.println("The combinator command has not fully implemented...");
+            System.out.println("Please do the conversion of lambda calculus by hand.");
             Term t = visitTerm(ctx.term());
             this.combinator = t;
         }
@@ -335,11 +337,14 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
     private void doHelp() {
         System.out.println("----------- BASICS -----------");
         System.out.println("print TERM; -> evaluate and display");
-        System.out.println("printnoeval TERM; -> parse but do not evaluate");
+        System.out.println("pne TERM; -> parse but do not evaluate");
         System.out.println("NAME := TERM; -> assign evaluated term to variable");
         System.out.println("NAME <- TERM; -> assign term without evaluating");
         System.out.println("listall; -> list defined variables");
         System.out.println("exit; -> quit interpreter");
+        System.out.println("----------- DISPLAYING -----------");
+        System.out.println("verbose on/off; -> show/hide derivation progress");
+        System.out.println("figure on/off; -> show/hide agile ASCII art");
     }
 
     private void doClear() {
