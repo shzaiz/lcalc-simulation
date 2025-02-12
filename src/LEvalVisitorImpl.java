@@ -13,8 +13,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
 
     // Free variables map: varName -> (Term, isRecursive?)
-    private Map<String,Term> freeVars = new HashMap<>();
-
+    private Map<String, Term> freeVars = new HashMap<>();
+    private SymbolTab tab = new SymbolTab(null);
     // The default fixed-point combinator, not yet implemented
     private Term combinator = createTuringCombinator();
 
@@ -164,7 +164,7 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         /*
          R -> E | E :: R
         */
-        Term left = visitEExpr(ctx.eExpr());
+        Term left = visitEExpr(ctx.eExpr()); // h
         if(ctx.rExpr() != null) {
             // means we have E :: R
             Term right = visitRExpr(ctx.rExpr());
@@ -191,18 +191,23 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
         if(ctx.NAME() != null) {
             String n = ctx.NAME().getText();
             // If it's in freeVars, return a copy
+
             if(freeVars.containsKey(n)) {
-                return freeVars.get(n).copy();
+                return freeVars.get(n);
             } else {
-                // Treat as a variable
-                return new Variable(n);
+                if(tab.find(n) != null){
+                    return tab.find(n);
+                }else{
+                    return new Variable(n);
+                }
             }
         }
         if(ctx.NUMBER() != null) {
             int val = Integer.parseInt(ctx.NUMBER().getText());
             return genNumber(val);
         }
-        if(ctx.LAMBDA() != null) {
+        /*
+        *if(ctx.LAMBDA() != null) {
             // λ (NAME+) . term
             List<TerminalNode> vars = ctx.lambdaVars().NAME();
             // build from right to left
@@ -211,6 +216,24 @@ public class LEvalVisitorImpl extends LEvalBaseVisitor<Term> {
                 Variable v = new Variable(vars.get(i).getText());
                 body = new Abstract(v, body);
             }
+            return body;
+        }
+        * */
+        if(ctx.LAMBDA() != null) {
+            // a new scope
+            tab = new SymbolTab(tab);
+            // λ (NAME+) . term
+            List<TerminalNode> vars = ctx.lambdaVars().NAME();
+            for(int i=vars.size()-1; i>=0; i--) {
+                Variable v = new Variable(vars.get(i).getText());
+                tab.put(vars.get(i).getText(), v);
+            }
+            // build from right to left
+            Term body = visitTerm(ctx.term());
+            for(int i=vars.size()-1; i>=0; i--) {
+                body = new Abstract(tab.find(vars.get(i).getText()), body);
+            }
+            tab = tab.getPrev();
             return body;
         }
         if(ctx.LCHEVRON() != null) {

@@ -1,9 +1,14 @@
 
 import org.antlr.v4.runtime.misc.Pair;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 public abstract class Term {
+
+    HashMap<String, Integer> freeVarMapCount = new HashMap<>();
 
     public enum TermType {
         ABSTRACT,
@@ -32,6 +37,7 @@ public abstract class Term {
     public abstract String toString();
     public abstract Term replace(Variable var, Term term);
     public abstract boolean isVarIn(Variable var);
+    public abstract List<Term> getAbstractVars();
 
     // One-step beta reduction
     // Return (newTerm, wasBetaReduced)
@@ -148,8 +154,14 @@ class Variable extends Term {
     }
 
     @Override
+    public List<Term> getAbstractVars() {
+        // a single variable is not abstracted
+        return new ArrayList<>();
+    }
+
+    @Override
     public Term copy() {
-        return new Variable(this.name);
+        return this;
     }
 
     @Override
@@ -159,7 +171,7 @@ class Variable extends Term {
 
     @Override
     public Term replace(Variable var, Term term) {
-        if(this.equals(var)) {
+        if(this == (var)) {
             // Replace current variable with 'term'
             return term.copy();
         }
@@ -168,7 +180,7 @@ class Variable extends Term {
 
     @Override
     public boolean isVarIn(Variable var) {
-        return this.equals(var);
+        return this == var;
     }
 
     @Override
@@ -197,9 +209,19 @@ class Abstract extends Term {
     public Term body;
 
     public Abstract(Variable v, Term b) {
+        // alpha conversion, variable renaming
         super(TermType.ABSTRACT);
+        if(freeVarMapCount.containsKey(v.name)){
+            int curr = freeVarMapCount.get(v.name);
+            this.freeVarMapCount.put(v.name, curr+1);
+        }else{
+            freeVarMapCount.put(v.name, 0);
+        }
+
         this.var = v;
         this.body = b;
+
+
     }
 
     @Override
@@ -218,19 +240,27 @@ class Abstract extends Term {
     }
 
     @Override
-    public Term replace(Variable v, Term t) {
+    public Term replace(Variable v, Term term) {
         // If same variable, skip
-        if(var.equals(v)) {
+        if(this.var == v) {
             // Then occurrences in the body are "shadowed"
-            return new Abstract(var, body);
+            return this.body.replace(v, term);
         }
+        Term t = this.copy();
         // Otherwise, replace inside the body
-        return new Abstract(var, body.replace(v, t));
+        return new Abstract(((Abstract)t).var, ((Abstract) t).body.replace(v, term));
     }
 
     @Override
     public boolean isVarIn(Variable v) {
         return body.isVarIn(v);
+    }
+
+    @Override
+    public List<Term> getAbstractVars() {
+        // This and subchild
+        body.getAbstractVars().add(var);
+        return body.getAbstractVars();
     }
 
     @Override
@@ -254,7 +284,7 @@ class Abstract extends Term {
             Apply app = (Apply) body;
             if(app.right instanceof Variable) {
                 Variable rightVar = (Variable) app.right;
-                if(rightVar.equals(var)) {
+                if(rightVar == (var)) {
                     // check if var is not free in app.left
                     if(!app.left.isVarIn(var)) {
                         // then eta-reduce
@@ -302,6 +332,12 @@ class Apply extends Term {
     @Override
     public boolean isVarIn(Variable v) {
         return left.isVarIn(v) || right.isVarIn(v);
+    }
+
+    @Override
+    public List<Term> getAbstractVars() {
+         left.getAbstractVars().addAll(right.getAbstractVars());
+         return left.getAbstractVars();
     }
 
     @Override
