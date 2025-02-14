@@ -8,7 +8,7 @@ Java programming course.
 
 This program can simulate beta and eta reduction, 
 and can generate alligator figures introduced in
-https://worrydream.com/AlligatorEggs/
+https://worrydream.com/AlligatorEggs/ 
 . 
 
 ## Running 
